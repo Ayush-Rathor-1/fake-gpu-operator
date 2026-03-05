@@ -14,7 +14,7 @@ import (
 
 const (
 	// topologyServerURL is the base URL for the topology server
-	topologyServerURL = "http://topology-server.gpu-operator/topology/nodes/"
+	topologyServerURL = "http://topology-server.fake-gpu-operator/topology/nodes/"
 )
 
 // getTopologyFromHTTP retrieves node topology from the HTTP topology server
@@ -63,15 +63,24 @@ func enumerateAllPossibleDevices(nodeName string) (AllocatableDevices, error) {
 		// Use ID (UUID) as device name, convert to lowercase for RFC 1123 compliance
 		deviceName := strings.ToLower(gpu.ID)
 
-		attributes := map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
-			"uuid": {
-				StringValue: ptr.To(gpu.ID),
-			},
-			"model": {
-				StringValue: ptr.To(nodeTopology.GpuProduct),
-			},
-		}
-
+        attributes := map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
+            "uuid": {
+                StringValue: ptr.To(gpu.ID),
+            },
+            "productName": {                                    // was "model"
+                StringValue: ptr.To(nodeTopology.GpuProduct),
+            },
+            "type": {
+                StringValue: ptr.To("gpu"),
+            },
+            "brand": {
+                StringValue: ptr.To("Nvidia"),
+            },
+            "architecture": {
+                StringValue: ptr.To("Unknown"),                // or add to topology struct
+            },
+        }
+		
 		// Convert memory to resource.Quantity
 		memoryQuantity := resource.NewQuantity(memoryBytes, resource.BinarySI)
 
